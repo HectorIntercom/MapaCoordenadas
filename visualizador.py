@@ -72,7 +72,7 @@ def agregar():
             lon = request.form['longitud']
             nombre = request.form['nombreCaja']
             cantidad = request.form['numero']
-            planta = request.form['planta']
+            planta = request.form['exampleFormControlInput5']
             try:
                 conn = mysql.connector.connect(**db_config)
                 cursor = conn.cursor()
@@ -237,5 +237,5 @@ def archivoPermitido(nombre):
     return '.' in nombre and nombre.rsplit('.', 1)[1].lower() in allowed_extensions
 
 if __name__ == '__main__':
-    #app.run(host='10.78.0.64', port=5000, ssl_context='adhoc')
-    app.run(host='127.0.0.1', port=5000)
+    #app.run(host='0.0.0.0', port=5000, ssl_context=('/etc/letsencrypt/live/nap.intercomchile.cl/fullchain.pem', '/etc/letsencrypt/live/nap.intercomchile.cl/privkey.pem'))
+    app.run(host='0.0.0.0', port=5000)
