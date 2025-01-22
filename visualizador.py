@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import mysql.connector
 import folium
+from datetime import timedelta
 
 app = Flask(__name__)
 app.secret_key = 'super'
@@ -13,7 +14,7 @@ db_config = {
     'database': 'coordenadas'
 }
 
-locations = []
+app.permanent_session_lifetime = timedelta(minutes=30)
 
 @app.route('/inicio', methods=['GET', 'POST'])
 def inicio():
@@ -29,7 +30,8 @@ def inicio():
             cursor.close()
             conn.close()
             if data and data[1] == clave:
-                session['usuario'] = data[0]  # Guardar el ID del usuario
+                session.permanent = True
+                session['usuario'] = 'usuario'  # Guardar el ID del usuario
                 flash("Inicio de sesión exitoso.")
                 return redirect(url_for('agregar'))  # Redirigir a /agregar
             else:
@@ -45,7 +47,15 @@ def inicio():
 def cerrar():
     session.pop('usuario', None)
     flash("Sesión cerrada.")
-    return render_template('inicioSesion.html')
+    return redirect(url_for("inicio"))
+
+@app.before_request
+def check_session_timeout():
+    if 'usuario' in session:
+        session.modified = True
+    else:
+        if request.endpoint != 'inicio' and request.endpoint != 'static':
+            return redirect(url_for('inicio'))
 
 def revisaSesion():
     if 'usuario' in session:
@@ -206,4 +216,4 @@ def archivoPermitido(nombre):
 
 if __name__ == '__main__':
     #app.run(host='10.78.0.64', port=5000, ssl_context='adhoc')
-    app.run(host='10.78.0.64', port=5000)
+    app.run(host='127.0.0.1', port=5000)
