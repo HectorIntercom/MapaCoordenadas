@@ -82,6 +82,7 @@ def agregar():
                 cursor.close()
                 conn.close()
                 mensaje = "Ubicacion agregada con éxito."
+                flash(mensaje)
             except mysql.connector.Error as err:
                 mensaje = f"Error de conexión o ejecución: {err}"
                 flash(mensaje)
@@ -111,23 +112,44 @@ def actualizar():
             # Consulta SQL para obtener los datos del dispositivo por id
             cursor.execute("SELECT * FROM coordenadas WHERE id = %s", (dispositivo_id,))
             dispositivo = cursor.fetchone()
+            cursor.close()
+            conn.close()
 
             if dispositivo:
                 # Si encontramos el dispositivo, rellenamos el formulario con los datos
                 id, latitud, longitud, nombreCaja, cantidadClientes, planta, foto = dispositivo
+                flash("Dispositivo encontrado con exito")
                 return render_template('actualizarCoordenadas.html', id=id, nombreCaja=nombreCaja, planta=planta, 
                                    cantidadClientes=cantidadClientes, latitud=latitud, longitud=longitud)
             else:
             # Si no encontramos el dispositivo, mostramos el mapa
                 flash("No se encontró el dispositivo con el id proporcionado.")
                 return redirect(url_for('mapa'))
-
-        # Cerrar la conexión
-        cursor.close()
-        conn.close()
-    
-    # Si es un GET, mostramos el formulario vacío
-        return render_template('formActualizar.html')
+            
+@app.route('/actualizarInfo', methods=['POST'])
+def actualizarInfo():
+    if not revisaSesion:
+        mensaje = "Por favor, inicie sesión primero."
+        flash(mensaje)
+        return redirect(url_for('inicio'))
+    else:
+        if request.method == 'POST':
+            id = request.form['id']
+            nombre = request.form['nombreCaja']
+            cantidad = request.form['cantidadClientes']
+            planta = request.form['planta']
+            try:
+                conn = mysql.connector.connect(**db_config)
+                cursor = conn.cursor()
+                query = "UPDATE coordenadas SET nombreCaja=%s, cantidadClientes=%s, planta=%s WHERE id=%s"
+                cursor.execute(query, (nombre, cantidad, planta, id))
+                conn.commit()
+                mensaje = "Dispositivo actualizado con exito"
+                flash(mensaje)
+                return redirect(url_for('mapa'))
+            except mysql.connector.Error as err:
+                mensaje = f"Error de conexión o ejecución: {err}"
+                flash(mensaje)
     
 @app.route('/mapa', methods=['GET', 'POST'])
 def mapa():
@@ -143,10 +165,10 @@ def mapa():
         plantaF = ''
         nombre = ''
         if request.method == 'POST':
-            plantaF = request.form.get('planta', '')
+            plantaF = request.form.get('exampleFormControlInput4', '')
             numero_minimo = int(request.form.get('numeroMinimo', 1))  # Convertimos a entero
             numero_maximo = int(request.form.get('numeroMaximo', 8))  # Convertimos a entero
-            nombre = request.form.get('nombre', '')
+            nombre = request.form.get('exampleFormControlInput1', '')
             #Filtro por planta
             if plantaF:
                 query += " AND planta = %s"
