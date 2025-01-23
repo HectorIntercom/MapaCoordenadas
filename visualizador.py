@@ -160,13 +160,13 @@ def mapa():
         #Obtener las coordenadas
         query = "SELECT id, latitud, longitud, nombreCaja, cantidadClientes, planta, foto FROM coordenadas WHERE 1"
         params = []
-        numero_minimo = 1
+        numero_minimo = 0
         numero_maximo = 8
         plantaF = ''
         nombre = ''
         if request.method == 'POST':
             plantaF = request.form.get('exampleFormControlInput4', '')
-            numero_minimo = int(request.form.get('numeroMinimo', 1))  # Convertimos a entero
+            numero_minimo = int(request.form.get('numeroMinimo', 0))  # Convertimos a entero
             numero_maximo = int(request.form.get('numeroMaximo', 8))  # Convertimos a entero
             nombre = request.form.get('exampleFormControlInput1', '')
             #Filtro por planta

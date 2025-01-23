@@ -110,7 +110,7 @@
                                         value="{{ numeroMinimoSeleccionado }}" placeholder="Mínimo" min="0" max="8"
                                         required>
                                     <input type="number" class="form-control" id="numeroMaximo" name="numeroMaximo"
-                                        value="{{ numeroMaximoSeleccionado }}" placeholder="Máximo" min="1" max="8"
+                                        value="{{ numeroMaximoSeleccionado }}" placeholder="Máximo" min="0" max="8"
                                         required>
                                 </div>
                             </div>
@@ -166,7 +166,7 @@
 
         // Agrega un event listener para escuchar cambios en el input de número mínimo
         numeroMinimo.addEventListener('input', function () {
-            if (numeroMinimo.value > 8 || numeroMinimo.value < 1) {
+            if (numeroMinimo.value > 8 || numeroMinimo.value < 0) {
                 numeroMinimo.value = null;
             }
             // Si el valor del número mínimo es mayor que el número máximo, actualiza el valor máximo
