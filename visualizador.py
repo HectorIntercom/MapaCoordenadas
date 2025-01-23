@@ -189,11 +189,11 @@ def mapa():
             else:
                 cursor.execute(query)
             data = cursor.fetchall()
-            mapa = folium.Map(location=[-35.440883, -71.694554], zoom_start=10)
+            mapa = folium.Map(location=[-35.440883, -71.694554], zoom_start=10, width='100%', height='100%')
             for id, latitud, longitud, nombreCaja, cantidadClientes, planta, foto in data:
                 if latitud is not None and longitud is not None:
                     popupHtml = f"""
-                    <div style="text-align:center;">
+                    <div style="text-align:center; maxwidth:30vm">
                     <h4>Id: {id}</h4>
                     <h6>{nombreCaja}</h6>
                     <h6>Clientes: {cantidadClientes}</h6>
@@ -237,5 +237,5 @@ def archivoPermitido(nombre):
     return '.' in nombre and nombre.rsplit('.', 1)[1].lower() in allowed_extensions
 
 if __name__ == '__main__':
-    #app.run(host='0.0.0.0', port=5000, ssl_context=('/etc/letsencrypt/live/nap.intercomchile.cl/fullchain.pem', '/etc/letsencrypt/live/nap.intercomchile.cl/privkey.pem'))
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, ssl_context=('/etc/letsencrypt/live/nap.intercomchile.cl/fullchain.pem', '/etc/letsencrypt/live/nap.intercomchile.cl/privkey.pem'))
+    #app.run(host='0.0.0.0', port=5000)

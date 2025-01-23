@@ -130,10 +130,24 @@
                             <button type="submit" class="btn btn-primary pl-3 pr-3 m-3">Aplicar filtros</button>
                         </form>
                     </div>
+                    <div class="collapse navbar-collapse" id="navbarFilters">
+                        <form id="formActualizar" action="/actualizar" method="POST" class="form text-bg-dark py-2">
+                            <h4 class="mb-2">Actualizar dispositivo</h4>
+                            <div class="mb-2">
+                                <label for="exampleFormControlInput5" class="form-label">Ingrese ID</label>
+                                <input type="number" class="form-control form-control-sm" name="id" min="1"
+                                    id="exampleFormControlInput5" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm w-100">Actualizar dispositivo</button>
+                            <p class="mt-2 mb-0" style="font-size: 0.9rem;">Si no sabe la ID, haga clic en el marcador.
+                            </p>
+                        </form>
+                    </div>
                 </div>
             </nav>
         </div>
         <!--Actualizar-->
+    <!--
         <div class="row">
             <div class="col-12 col-lg-6">
                 <div class="p-2 mb-3 mt-0">
@@ -150,6 +164,7 @@
                 </div>
             </div>
         </div>
+    -->
     </div>
 
     <div class="row" style="height: 200px; width: 100%;">
@@ -160,8 +175,8 @@
 
     <script>
         // Obtiene los elementos de los inputs
-        const numeroMinimo = document.getElementById('exampleFormControlInput2');
-        const numeroMaximo = document.getElementById('exampleFormControlInput3');
+        const numeroMinimo = document.getElementById('numeroMinimo');
+        const numeroMaximo = document.getElementById('numeroMaximo');
         const id = document.getElementById('exampleFormControlInput5');
 
         // Agrega un event listener para escuchar cambios en el input de número mínimo
