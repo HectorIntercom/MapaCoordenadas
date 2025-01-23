@@ -117,12 +117,14 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="exampleFormControlInput5" class="form-label">Planta</label>
-                                    <select class="form-select" id="exampleFormControlInput5"
-                                        name="planta" aria-label="Default select example">
-                                        <option value="Callejones">Callejones</option>
-                                        <option value="Colin">Colin</option>
-                                        <option value="Talca" selected>Talca</option>
+                                    <select class="form-select" id="exampleFormControlInput5" name="planta"
+                                        aria-label="Default select example">
+                                        <option value="Callejones" {% if planta=='Callejones' %}selected{% endif %}>
+                                            Callejones</option>
+                                        <option value="Colin" {% if planta=='Colin' %}selected{% endif %}>Colin</option>
+                                        <option value="Talca" {% if planta=='Talca' %}selected{% endif %}>Talca</option>
                                     </select>
+
                                 </div>
                             </div>
                             <div class="button-container">
