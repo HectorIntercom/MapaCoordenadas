@@ -1,178 +1,117 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapeo de Dispositivos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <style>
-        .form {
-            background: rgba(0, 0, 0, 0.9);
-            padding: 40px;
-            margin: 40px auto;
-            border-radius: 4px;
-            box-shadow: 0 4px 10px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .notificacion {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #05AFF2;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .notificacion.mostrar {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .notificacion .cerrar {
-            background: none;
-            border: none;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-            margin-left: 10px;
-            cursor: pointer;
-            float: right;
-        }
-
-        .notificacion .cerrar:hover {
-            color: #ffcccc;
-        }
-    </style>
-
-    <div class="row text-bg-dark p-3 text-center align-items-center" style="width: 100%;">
-        <div class="col-12 col-md-4 mb-3 mb-md-0">
-            <img class="img-fluid" src="https://www.intercomchile.cl/img/logoazul.png" alt="Logo azul" />
-        </div>
-        <div class="col-12 col-md-8">
-            <h5 class="text-white">Sistema de mapeo de dispositivos</h5>
-        </div>
-    </div>
+    <title>Mapeo Dispositivos - IntercomChileTV</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
-    <div class="container text-center">
-        <div class="row align-items-center mb-2">
-            <div class="col-5 text-start">
-                <h1>Mapa de Dispositivos Instalados</h1>
-            </div>
-            <div class="col-7 ms-auto">
-                <div class="row">
-                    <div class="col-6">
-                        <a href="/agregar" class="btn btn-primary m-2">Agregar dispositivo</a>
-                    </div>
-                    <div class="col-6">
-                        <a href="/cerrar" class="btn btn-primary m-2">Cerrar sesión</a>
-                    </div>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid h-25 d-block d-flex justify-content-around collapse navbar-collapse ml-3">
+            <img src="https://deco.intercomchile.cl/img/logo-bronet.png" width="20%"></img>
+            <button class="btn btn-outline-light" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasOptions" aria-controls="offcanvasOptions">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+        </div>
+    </nav>
+
+    <!-- Mapa a pantalla completa -->
+    {{ mapaHtml|safe }}
+
+    <!-- Offcanvas para opciones -->
+    <div class="offcanvas offcanvas-end w-75 top-0 bg-dark text-light" tabindex="-1" id="offcanvasOptions"
+        aria-labelledby="offcanvasOptionsLabel">
+        <div class="offcanvas-header w-100 mb-1">
+            <button type="button" class="btn-close btn-close-white me-3" data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center w-100">
+                <h3 class="offcanvas-title mb-2 mb-md-0" id="offcanvasOptionsLabel">Mapa de dispositivos</h3>
+                <div class="w-75 w-md-25 m-2">
+                    <a href="/agregar" class="btn btn-primary w-100">Agregar dispositivo</a>
+                </div>
+                <div class="w-75 w-md-25 m-2">
+                    <a href="/cerrar" class="btn btn-primary w-100">Cerrar sesión</a>
                 </div>
             </div>
         </div>
-        <!--Filtros-->
-        <div class="row mb-0">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light w-100 mb-0">
-                <div class="container-fluid mb-0">
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarFilters" aria-controls="navbarFilters" aria-expanded="false"
-                        aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarFilters">
-                        <form action="/mapa" method="POST" class="d-flex flex-wrap w-100">
-                            <div class="me-3">
-                                <label for="exampleFormControlInput1" class="form-label">Nombre caja</label>
-                                <select class="form-select" aria-label="Default select example"
-                                    id="exampleFormControlInput1" name="exampleFormControlInput1">
-                                    <option value="">Todos</option>
-                                    {% for nombre in opcionesNombre %}
-                                    <option value="{{ nombre[0] }}" {% if nombreSeleccionado==nombre[0] %} selected {%
-                                        endif %}>
-                                        {{ nombre[0] }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="me-3">
-                                <label class="form-label">Número de clientes</label>
-                                <div class="d-flex">
-                                    <input type="number" class="form-control me-2" id="numeroMinimo" name="numeroMinimo"
-                                        value="{{ numeroMinimoSeleccionado }}" placeholder="Mínimo" min="0" max="8"
-                                        required>
-                                    <input type="number" class="form-control" id="numeroMaximo" name="numeroMaximo"
-                                        value="{{ numeroMaximoSeleccionado }}" placeholder="Máximo" min="0" max="8"
-                                        required>
-                                </div>
-                            </div>
-                            <div class="me-3">
-                                <label for="exampleFormControlInput4" class="form-label">Planta</label>
-                                <select class="form-select" aria-label="Default select example"
-                                    id="exampleFormControlInput4" name="exampleFormControlInput4">
-                                    <option value="">Todas</option>
-                                    {% for opcion in opcionesPlanta %}
-                                    <option value="{{ opcion[0] }}" {% if plantaSeleccionada==opcion[0] %} selected {%
-                                        endif %}>
-                                        {{ opcion[0] }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary pl-3 pr-3 m-3">Aplicar filtros</button>
-                        </form>
-                    </div>
-                    <div class="collapse navbar-collapse" id="navbarFilters">
-                        <form id="formActualizar" action="/actualizar" method="POST" class="form text-bg-dark py-2">
-                            <h4 class="mb-2">Actualizar dispositivo</h4>
-                            <div class="mb-2">
-                                <label for="exampleFormControlInput5" class="form-label">Ingrese ID</label>
-                                <input type="number" class="form-control form-control-sm" name="id" min="1"
-                                    id="exampleFormControlInput5" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-sm w-100">Actualizar dispositivo</button>
-                            <p class="mt-2 mb-0" style="font-size: 0.9rem;">Si no sabe la ID, haga clic en el marcador.
-                            </p>
-                        </form>
-                    </div>
+        <div class="offcanvas-body mt-1">
+            <!--Filtros-->
+            <form action="/mapa" method="POST" class="form py-2 w-100">
+                <h4>Filtros</h4>
+                <div class="form-floating mb-3">
+                    <select class="form-select rounded-3" aria-label="Default select example"
+                        id="exampleFormControlInput1" name="exampleFormControlInput1">
+                        <option value="">Todos</option>
+                        {% for nombre in opcionesNombre %}
+                        <option value="{{ nombre[0] }}" {% if nombreSeleccionado==nombre[0] %} selected {% endif %}>
+                            {{ nombre[0] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <label for="exampleFormControlInput1" class="text-dark">Nombre caja</label>
                 </div>
-            </nav>
-        </div>
-        <!--Actualizar-->
-    <!--
-        <div class="row">
-            <div class="col-12 col-lg-6">
-                <div class="p-2 mb-3 mt-0">
-                    <form id="formActualizar" action="/actualizar" method="POST" class="form text-bg-dark py-2">
-                        <h4 class="mb-2">Actualizar dispositivo</h4>
-                        <div class="mb-2">
-                            <label for="exampleFormControlInput5" class="form-label">Ingrese ID</label>
-                            <input type="number" class="form-control form-control-sm" name="id" min="1"
-                                id="exampleFormControlInput5" required>
+                <div class="mb-3 w-100 pt-0">
+                    <label class="form-label mt-0 text-ligt">Número de clientes</label>
+                    <div class="d-flex col-12">
+                        <div class="row d-flex justify-content-between w-100">
+                            <div class="form-floating w-50 mr-3">
+                                <input type="number" class="form-control rounded-3" id="numeroMinimo"
+                                    name="numeroMinimo" value="{{ numeroMinimoSeleccionado }}" placeholder="Min" min="0"
+                                    max="8" required>
+                                <label for="numeroMinimo" class="text-dark">Minimo</label>
+                            </div>
+                            <div class="form-floating w-50 ml-3">
+                                <input type="number" class="form-control rounded-3" id="numeroMaximo"
+                                    name="numeroMaximo" value="{{ numeroMaximoSeleccionado }}" placeholder="Max" min="0"
+                                    max="8" required>
+                                <label for="numeroMinimo" class="text-dark">Maximo</label>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm w-100">Actualizar dispositivo</button>
-                        <p class="mt-2 mb-0" style="font-size: 0.9rem;">Si no sabe la ID, haga clic en el marcador.</p>
-                    </form>
+                    </div>
                 </div>
-            </div>
+                <div class="form-floating mb-3">
+                    <select class="form-select rounded-3" aria-label="Default select example"
+                        id="exampleFormControlInput4" name="exampleFormControlInput4">
+                        <option value="">Todas</option>
+                        {% for opcion in opcionesPlanta %}
+                        <option value="{{ opcion[0] }}" {% if plantaSeleccionada==opcion[0] %} selected {% endif %}>
+                            {{ opcion[0] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <label for="exampleFormControlInput4" class="form-label text-dark">Planta</label>
+                </div>
+                <div class="row d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary btn-sm w-50 m-3 p-2">Aplicar Filtros</button>
+                </div>
+            </form>
+            <!--Actualizar-->
+            <form id="formActualizar" action="/actualizar" method="POST" class="form py-2 mt-3 w-100">
+                <h4>Actualizar dispositivo</h4>
+                <div class="form-floating mb-2">
+                    <input type="number" class="form-control rounded-3" name="id" min="1" id="exampleFormControlInput5"
+                        required>
+                    <label for="exampleFormControlInput5" class="text-dark">Ingrese ID</label>
+
+                </div>
+                <div class="row d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary btn-sm w-50 m-3 p-2">Actualizar</button>
+                </div>
+                <small class="text-body-secondary">Si no sabe la ID, haga clic en el
+                    marcador.</small>
+            </form>
         </div>
-    -->
     </div>
 
-    <div class="row" style="height: 200px; width: 100%;">
-        <div class="col-12">
-            {{ mapaHtml|safe }}
-        </div>
-    </div>
-
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Obtiene los elementos de los inputs
         const numeroMinimo = document.getElementById('numeroMinimo');
@@ -202,31 +141,12 @@
             }
         });
 
-        // Mostrar notificación
-        window.onload = () => {
-            const notificacion = document.getElementById('notificacion');
-            if (notificacion) {
-                notificacion.classList.add('mostrar');
-                setTimeout(cerrarNotificacion, 5000); // Ocultar automáticamente después de 5 segundos
-            }
-        };
-
-        function cerrarNotificacion() {
-            const notificacion = document.getElementById('notificacion');
-            notificacion.classList.remove('mostrar');
-        }
-
-        function cerrarSesion() {
-            window.location.href = "/cerrar";
-        }
-
         id.addEventListener('input', function () {
             if (id.value < 1) {
                 id.value = null
             }
         })
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
 </body>
+
+</html>

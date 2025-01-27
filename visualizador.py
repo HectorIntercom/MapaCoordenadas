@@ -3,9 +3,13 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import mysql.connector
 import folium
 from datetime import timedelta
+from flask_cors import CORS
+from screeninfo import get_monitors
 
 app = Flask(__name__)
 app.secret_key = 'super'
+CORS(app, resources={r"*": {"origins": "*"}})
+
 
 db_config = {
     'host': '192.168.20.5',
@@ -15,6 +19,9 @@ db_config = {
 }
 
 app.permanent_session_lifetime = timedelta(minutes=30)
+m = get_monitors()
+m_width = m[0].width
+m_height = m[0].height
 
 @app.route('/inicio', methods=['GET', 'POST'])
 def inicio():
@@ -72,23 +79,30 @@ def agregar():
             lon = request.form['longitud']
             nombre = request.form['nombreCaja']
             cantidad = request.form['numero']
-            planta = request.form['exampleFormControlInput5']
+            planta = request.form['planta']
             try:
                 conn = mysql.connector.connect(**db_config)
                 cursor = conn.cursor()
                 query = "INSERT INTO coordenadas (latitud, longitud, nombreCaja, cantidadClientes, planta) VALUES (%s, %s, %s, %s, %s)"
                 cursor.execute(query, (lat, lon, nombre, cantidad, planta))
                 conn.commit()
-                cursor.close()
-                conn.close()
                 mensaje = "Ubicacion agregada con éxito."
                 flash(mensaje)
             except mysql.connector.Error as err:
                 mensaje = f"Error de conexión o ejecución: {err}"
                 flash(mensaje)
                 return render_template('agregarCoordenadas.html', actualizar=False)
-
-        return render_template('agregarCoordenadas.html', actualizar=False)
+        try:
+            conn = mysql.connector.connect(**db_config)
+            cursor = conn.cursor()
+            query = "SELECT nombre FROM planta"
+            cursor.execute(query)
+            plantas = cursor.fetchall()
+        except mysql.connector.Error as err:
+                mensaje = f"Error de conexión o ejecución: {err}"
+                flash(mensaje)
+                return render_template('agregarCoordenadas.html', actualizar=False)
+        return render_template('agregarCoordenadas.html', actualizar=False, plantas=plantas)
     else:
         mensaje = "Por favor, inicie sesión primero."
         flash(mensaje)
@@ -112,6 +126,10 @@ def actualizar():
             # Consulta SQL para obtener los datos del dispositivo por id
             cursor.execute("SELECT * FROM coordenadas WHERE id = %s", (dispositivo_id,))
             dispositivo = cursor.fetchone()
+
+            cursor.execute("SELECT nombre FROM planta")
+            plantas = cursor.fetchall()
+
             cursor.close()
             conn.close()
 
@@ -120,7 +138,7 @@ def actualizar():
                 id, latitud, longitud, nombreCaja, cantidadClientes, planta, foto = dispositivo
                 flash("Dispositivo encontrado con exito")
                 return render_template('actualizarCoordenadas.html', id=id, nombreCaja=nombreCaja, planta=planta, 
-                                   cantidadClientes=cantidadClientes, latitud=latitud, longitud=longitud)
+                                   cantidadClientes=cantidadClientes, latitud=latitud, longitud=longitud, plantas=plantas)
             else:
             # Si no encontramos el dispositivo, mostramos el mapa
                 flash("No se encontró el dispositivo con el id proporcionado.")
@@ -189,6 +207,7 @@ def mapa():
             else:
                 cursor.execute(query)
             data = cursor.fetchall()
+            #mapa = folium.Map(location=[-35.440883, -71.694554], zoom_start=10, width=m_width, height=m_height)
             mapa = folium.Map(location=[-35.440883, -71.694554], zoom_start=10, width='100%', height='100%')
             for id, latitud, longitud, nombreCaja, cantidadClientes, planta, foto in data:
                 if latitud is not None and longitud is not None:
@@ -200,7 +219,7 @@ def mapa():
                     <h6>{planta}</h6>
                     </div>
                     """
-                    popup = folium.Popup(popupHtml, max_width=300)
+                    popup = folium.Popup(popupHtml, max_width=200)
                     if cantidadClientes == 8:
                         folium.Marker([latitud, longitud], popup=popup, icon=folium.Icon(color='darkred')).add_to(mapa)
                     elif cantidadClientes == 7:
@@ -209,15 +228,15 @@ def mapa():
                         folium.Marker([latitud, longitud], popup=popup, icon=folium.Icon(color='orange')).add_to(mapa)
                     elif cantidadClientes > 2: # 3, 4
                         folium.Marker([latitud, longitud], popup=popup, icon=folium.Icon(color='lightgreen')).add_to(mapa)
-                    else: # 1, 2
+                    else: # 0, 1, 2
                         folium.Marker([latitud, longitud], popup=popup, icon=folium.Icon(color='darkgreen')).add_to(mapa)
             # Obtener opciones para filtros
-            cursor.execute("SELECT DISTINCT planta FROM coordenadas")
+            cursor.execute("SELECT nombre FROM planta")
             opcionesPlanta = cursor.fetchall()
             cursor.execute("SELECT DISTINCT nombreCaja FROM coordenadas")
             opcionesNombre = cursor.fetchall()
             # Generar el HTML del mapa
-            mapaHtml = mapa._repr_html_()
+            mapaHtml = mapa.get_root().render()
             # Renderizar la plantilla con el mapa y opciones
             return render_template('verMapa.html', mapaHtml=mapaHtml, opcionesPlanta=opcionesPlanta,
                                    opcionesNombre=opcionesNombre, plantaSeleccionada=plantaF, 
@@ -237,5 +256,5 @@ def archivoPermitido(nombre):
     return '.' in nombre and nombre.rsplit('.', 1)[1].lower() in allowed_extensions
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, ssl_context=('/etc/letsencrypt/live/nap.intercomchile.cl/fullchain.pem', '/etc/letsencrypt/live/nap.intercomchile.cl/privkey.pem'))
-    #app.run(host='0.0.0.0', port=5000)
+    #app.run(host='0.0.0.0', port=5000, ssl_context=('/etc/letsencrypt/live/nap.intercomchile.cl/fullchain.pem', '/etc/letsencrypt/live/nap.intercomchile.cl/privkey.pem'))
+    app.run(host='0.0.0.0', port=5000)
